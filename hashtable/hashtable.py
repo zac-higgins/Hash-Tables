@@ -127,7 +127,7 @@ class HashTable:
         else:
             return None
 
-    def resize(self):
+    def resize(self, new_capacity):
         """
         Doubles the capacity of the hash table and
         rehash all key/value pairs.
@@ -135,10 +135,16 @@ class HashTable:
         Implement this.
         """
         temp_storage = self.storage
-        self.storage = [None] * (self.capacity * 2)
+        self.capacity = new_capacity
+        self.storage = [None] * self.capacity
         for item in temp_storage:
             if item is not None:
-                self.put(item[0], item[1])
+                if item.next is not None:
+                    print(item.key, item.value, "-->", item.next.key, item.next.value)
+                elif item.next is None:
+                    print(item.key, item.value, "-->", item.next)
+                index = self.hash_index(item.key)
+                self.storage[index] = item
 
 if __name__ == "__main__":
     ht = HashTable(2)
@@ -160,24 +166,25 @@ if __name__ == "__main__":
     # print("is it the new value? ", ht.get("line_3"))
 
     # # Test resizing
-    # old_capacity = len(ht.storage)
-    # ht.resize()
-    # new_capacity = len(ht.storage)
+    print("-----")
+    old_capacity = len(ht.storage)
+    ht.resize(4)
+    new_capacity = len(ht.storage)
 
-    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
-    # # Test if data intact after resizing
-    # print(ht.get("line_1"))
-    # print(ht.get("line_2"))
-    # print(ht.get("line_3"))
-
-    print("----")
-    # ht.delete("line_3")
-    print("delete")
-    print("----")
-
+    # Test if data intact after resizing
     print(ht.get("line_1"))
     print(ht.get("line_2"))
     print(ht.get("line_3"))
+
+    # print("----")
+    # # ht.delete("line_3")
+    # print("delete")
+    # print("----")
+
+    # print(ht.get("line_1"))
+    # print(ht.get("line_2"))
+    # print(ht.get("line_3"))
 
     print("")
