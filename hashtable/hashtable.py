@@ -84,8 +84,25 @@ class HashTable:
 
         Implement this.
         """
-        index = self.hash_index(key)
-        self.storage[index] = None
+        if self.get(key) is not None:
+            index = self.hash_index(key)
+            node = self.storage[index]
+            while node.next is not None:
+                if node.key == key:
+                    node.key = node.next.key
+                    node.value = node.next.value
+                    node.next = node.next.next
+                    return
+                else:
+                    node = node.next
+            if node.key == key:
+                node.key = None
+                node.value = None
+                node.next = None
+            else:
+                return None
+        else:
+            return None
 
     def get(self, key):
         """
@@ -138,9 +155,9 @@ if __name__ == "__main__":
     print(ht.get("line_3"))
 
     # Test overwriting
-    print("")
-    ht.put("line_3", "this is the new value!")
-    print("is it the new value? ", ht.get("line_3"))
+    # print("")
+    # ht.put("line_3", "this is the new value!")
+    # print("is it the new value? ", ht.get("line_3"))
 
     # # Test resizing
     # old_capacity = len(ht.storage)
@@ -154,13 +171,13 @@ if __name__ == "__main__":
     # print(ht.get("line_2"))
     # print(ht.get("line_3"))
 
-    # print("")
-    # ht.delete("line_1")
-    # print("delete")
-    # print("")
+    print("----")
+    # ht.delete("line_3")
+    print("delete")
+    print("----")
 
-    # print(ht.get("line_1"))
-    # print(ht.get("line_2"))
-    # print(ht.get("line_3"))
+    print(ht.get("line_1"))
+    print(ht.get("line_2"))
+    print(ht.get("line_3"))
 
-    # print("")
+    print("")
