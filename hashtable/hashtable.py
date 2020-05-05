@@ -59,7 +59,22 @@ class HashTable:
         Implement this.
         """
         index = self.hash_index(key)
-        self.storage[index] = (key, value)
+        node = self.storage[index]
+        if node is None:
+            self.storage[index] = HashTableEntry(key, value)
+        elif node is not None:
+            if node.key != key:
+                while node.next is not None:
+                    if node.key != key:
+                        node = node.next
+                    else:
+                        node.value = value
+                if node.key == key:
+                    node.value = value
+                else:
+                    node.next = HashTableEntry(key, value)
+            else:
+                node.value = value
 
     def delete(self, key):
         """
@@ -81,8 +96,17 @@ class HashTable:
         Implement this.
         """
         index = self.hash_index(key)
-        if self.storage[index] is not None:
-            return self.storage[index][1]
+        node = self.storage[index]
+        if node is not None:
+            while node.next is not None:
+                if node.key == key:
+                    return node.value
+                else:
+                    node = node.next
+            if node.key == key:
+                    return node.value
+            else:
+                return None
         else:
             return None
 
@@ -100,7 +124,7 @@ class HashTable:
                 self.put(item[0], item[1])
 
 if __name__ == "__main__":
-    ht = HashTable(3)
+    ht = HashTable(2)
 
     ht.put("line_1", "Tiny hash table")
     ht.put("line_2", "Filled beyond capacity")
@@ -113,25 +137,30 @@ if __name__ == "__main__":
     print(ht.get("line_2"))
     print(ht.get("line_3"))
 
-    # Test resizing
-    old_capacity = len(ht.storage)
-    ht.resize()
-    new_capacity = len(ht.storage)
-
-    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
-
-    # Test if data intact after resizing
-    print(ht.get("line_1"))
-    print(ht.get("line_2"))
-    print(ht.get("line_3"))
-
+    # Test overwriting
     print("")
-    ht.delete("line_1")
-    print("delete")
-    print("")
+    ht.put("line_3", "this is the new value!")
+    print("is it the new value? ", ht.get("line_3"))
 
-    print(ht.get("line_1"))
-    print(ht.get("line_2"))
-    print(ht.get("line_3"))
+    # # Test resizing
+    # old_capacity = len(ht.storage)
+    # ht.resize()
+    # new_capacity = len(ht.storage)
 
-    print("")
+    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+
+    # # Test if data intact after resizing
+    # print(ht.get("line_1"))
+    # print(ht.get("line_2"))
+    # print(ht.get("line_3"))
+
+    # print("")
+    # ht.delete("line_1")
+    # print("delete")
+    # print("")
+
+    # print(ht.get("line_1"))
+    # print(ht.get("line_2"))
+    # print(ht.get("line_3"))
+
+    # print("")
