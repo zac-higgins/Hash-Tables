@@ -140,9 +140,13 @@ class HashTable:
         for item in temp_storage:
             if item is not None:
                 if item.next is not None:
+                    while item.next is not None:
+                        # print(item.key, item.value, "-->", item.next.key, item.next.value)
+                        self.put(item.key, item.value)
+                        item = item.next
                     self.put(item.key, item.value)
-                    self.put(item.next.key, item.next.value)
                 elif item.next is None:
+                    # print(item.key, item.value, "-->", item.next)
                     self.put(item.key, item.value)
 
 if __name__ == "__main__":
