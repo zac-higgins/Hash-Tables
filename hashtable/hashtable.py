@@ -19,6 +19,8 @@ class HashTable:
     def __init__(self, storage):
         self.storage = [None] * storage
         self.capacity = len(self.storage)
+        self.total_items = 0
+        self.load_factor = 0
 
     def fnv1(self, key):
         """
@@ -48,9 +50,8 @@ class HashTable:
         between within the storage capacity of the hash table.
         """
         return self.fnv1(key) % self.capacity
-        # return self.djb2(key) % self.capacity
 
-    def put(self, key, value):
+    def put(self, key, value, manual=False):
         """
         Store the value with the given key.
 
@@ -62,6 +63,7 @@ class HashTable:
         node = self.storage[index]
         if node is None:
             self.storage[index] = HashTableEntry(key, value)
+            self.total_items += 1
         elif node is not None:
             if node.key != key:
                 while node.next is not None:
@@ -73,8 +75,11 @@ class HashTable:
                     node.value = value
                 else:
                     node.next = HashTableEntry(key, value)
+                    self.total_items += 1
             else:
                 node.value = value
+        if manual == False:
+            self.auto_resize()
 
     def delete(self, key):
         """
@@ -92,6 +97,7 @@ class HashTable:
                     node.key = node.next.key
                     node.value = node.next.value
                     node.next = node.next.next
+                    self.total_items -= 1
                     return
                 else:
                     node = node.next
@@ -99,10 +105,12 @@ class HashTable:
                 node.key = None
                 node.value = None
                 node.next = None
+                self.total_items -= 1
             else:
                 return None
         else:
             return None
+        self.auto_resize()
 
     def get(self, key):
         """
@@ -127,7 +135,7 @@ class HashTable:
         else:
             return None
 
-    def resize(self):
+    def resize(self, new_capacity, manual):
         """
         Doubles the capacity of the hash table and
         rehash all key/value pairs.
@@ -135,10 +143,28 @@ class HashTable:
         Implement this.
         """
         temp_storage = self.storage
-        self.storage = [None] * (self.capacity * 2)
+        self.capacity = new_capacity
+        self.storage = [None] * new_capacity
         for item in temp_storage:
             if item is not None:
-                self.put(item[0], item[1])
+                if item.next is not None:
+                    while item.next is not None:
+                        self.put(item.key, item.value, manual)
+                        item = item.next
+                    self.put(item.key, item.value, manual)
+                elif item.next is None:
+                    self.put(item.key, item.value, manual)
+
+    def auto_resize(self):
+        self.load_factor = self.total_items / self.capacity
+        if self.load_factor > 0.7:
+            self.resize(self.capacity * 2, False)
+        elif self.load_factor < 0.2:
+            new_size = self.capacity // 2
+            if new_size > 8:
+                self.resize(new_size, False)
+            elif new_size <= 8:
+                self.resize(8, False)
 
 if __name__ == "__main__":
     ht = HashTable(2)
@@ -160,24 +186,25 @@ if __name__ == "__main__":
     # print("is it the new value? ", ht.get("line_3"))
 
     # # Test resizing
-    # old_capacity = len(ht.storage)
-    # ht.resize()
-    # new_capacity = len(ht.storage)
+    print("-----")
+    old_capacity = len(ht.storage)
+    ht.resize(4)
+    new_capacity = len(ht.storage)
 
-    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
-    # # Test if data intact after resizing
-    # print(ht.get("line_1"))
-    # print(ht.get("line_2"))
-    # print(ht.get("line_3"))
-
-    print("----")
-    # ht.delete("line_3")
-    print("delete")
-    print("----")
-
+    # Test if data intact after resizing
     print(ht.get("line_1"))
     print(ht.get("line_2"))
     print(ht.get("line_3"))
+
+    # print("----")
+    # # ht.delete("line_3")
+    # print("delete")
+    # print("----")
+
+    # print(ht.get("line_1"))
+    # print(ht.get("line_2"))
+    # print(ht.get("line_3"))
 
     print("")
