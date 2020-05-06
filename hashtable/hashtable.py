@@ -19,6 +19,8 @@ class HashTable:
     def __init__(self, storage):
         self.storage = [None] * storage
         self.capacity = len(self.storage)
+        self.total_items = 0
+        self.load_factor = 0
 
     def fnv1(self, key):
         """
@@ -50,7 +52,7 @@ class HashTable:
         return self.fnv1(key) % self.capacity
         # return self.djb2(key) % self.capacity
 
-    def put(self, key, value):
+    def put(self, key, value, manual=False):
         """
         Store the value with the given key.
 
@@ -62,6 +64,7 @@ class HashTable:
         node = self.storage[index]
         if node is None:
             self.storage[index] = HashTableEntry(key, value)
+            self.total_items += 1
         elif node is not None:
             if node.key != key:
                 while node.next is not None:
@@ -73,8 +76,11 @@ class HashTable:
                     node.value = value
                 else:
                     node.next = HashTableEntry(key, value)
+                    self.total_items += 1
             else:
                 node.value = value
+        if manual == False:
+            self.auto_resize()
 
     def delete(self, key):
         """
@@ -92,6 +98,7 @@ class HashTable:
                     node.key = node.next.key
                     node.value = node.next.value
                     node.next = node.next.next
+                    self.total_items -= 1
                     return
                 else:
                     node = node.next
@@ -99,10 +106,12 @@ class HashTable:
                 node.key = None
                 node.value = None
                 node.next = None
+                self.total_items -= 1
             else:
                 return None
         else:
             return None
+        self.auto_resize()
 
     def get(self, key):
         """
@@ -127,7 +136,7 @@ class HashTable:
         else:
             return None
 
-    def resize(self, new_capacity):
+    def resize(self, new_capacity, manual):
         """
         Doubles the capacity of the hash table and
         rehash all key/value pairs.
@@ -136,18 +145,33 @@ class HashTable:
         """
         temp_storage = self.storage
         self.capacity = new_capacity
-        self.storage = [None] * self.capacity
+        self.storage = [None] * new_capacity
         for item in temp_storage:
             if item is not None:
                 if item.next is not None:
                     while item.next is not None:
                         # print(item.key, item.value, "-->", item.next.key, item.next.value)
-                        self.put(item.key, item.value)
+                        self.put(item.key, item.value, manual)
                         item = item.next
-                    self.put(item.key, item.value)
+                    self.put(item.key, item.value, manual)
                 elif item.next is None:
                     # print(item.key, item.value, "-->", item.next)
-                    self.put(item.key, item.value)
+                    self.put(item.key, item.value, manual)
+
+    def auto_resize(self):
+        self.load_factor = self.total_items / self.capacity
+        # print("load factor on put: ", self.load_factor)
+        if self.load_factor > 0.7:
+            self.resize(self.capacity * 2, False)
+            # print("bigger resize happened! ", self.capacity)
+        elif self.load_factor < 0.2:
+            new_size = self.capacity // 2
+            if new_size > 8:
+                self.resize(new_size, False)
+                # print("smaller resize happened! ", self.capacity)
+            elif new_size <= 8:
+                self.resize(8, False)
+                # print("smaller resize happened! ", self.capacity)
 
 if __name__ == "__main__":
     ht = HashTable(2)
