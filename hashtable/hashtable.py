@@ -50,7 +50,6 @@ class HashTable:
         between within the storage capacity of the hash table.
         """
         return self.fnv1(key) % self.capacity
-        # return self.djb2(key) % self.capacity
 
     def put(self, key, value, manual=False):
         """
@@ -150,28 +149,22 @@ class HashTable:
             if item is not None:
                 if item.next is not None:
                     while item.next is not None:
-                        # print(item.key, item.value, "-->", item.next.key, item.next.value)
                         self.put(item.key, item.value, manual)
                         item = item.next
                     self.put(item.key, item.value, manual)
                 elif item.next is None:
-                    # print(item.key, item.value, "-->", item.next)
                     self.put(item.key, item.value, manual)
 
     def auto_resize(self):
         self.load_factor = self.total_items / self.capacity
-        # print("load factor on put: ", self.load_factor)
         if self.load_factor > 0.7:
             self.resize(self.capacity * 2, False)
-            # print("bigger resize happened! ", self.capacity)
         elif self.load_factor < 0.2:
             new_size = self.capacity // 2
             if new_size > 8:
                 self.resize(new_size, False)
-                # print("smaller resize happened! ", self.capacity)
             elif new_size <= 8:
                 self.resize(8, False)
-                # print("smaller resize happened! ", self.capacity)
 
 if __name__ == "__main__":
     ht = HashTable(2)
